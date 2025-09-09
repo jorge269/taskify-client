@@ -1,6 +1,6 @@
-import { registerUser } from '../services/userService.js';
+import { registerUser, loginUser, recoverPassword } from "../services/userService.js";
 
-const app = document.getElementById('app');
+const app = document.getElementById("app");
 
 /**
  * Build a safe URL for fetching view fragments inside Vite (dev and build).
@@ -12,7 +12,7 @@ const viewURL = (name) => new URL(`../views/${name}.html`, import.meta.url);
 /**
  * Load an HTML fragment by view name and initialize its corresponding logic.
  * @async
- * @param {string} name - The view name to load (e.g., "home", "board").
+ * @param {string} name - The view name to load (e.g., "login", "dashboard").
  * @throws {Error} If the view cannot be fetched.
  */
 async function loadView(name) {
@@ -21,8 +21,10 @@ async function loadView(name) {
   const html = await res.text();
   app.innerHTML = html;
 
-  if (name === 'home') initHome();
-  if (name === 'board') initBoard();
+  if (name === "login") initLogin();
+  if (name === "register") initRegister();
+  if (name === "recover") initRecover();
+  if (name === "dashboard") initDashboard();
 }
 
 /**
@@ -30,100 +32,150 @@ async function loadView(name) {
  * Attaches an event listener for URL changes and triggers the first render.
  */
 export function initRouter() {
-  window.addEventListener('hashchange', handleRoute);
+  window.addEventListener("hashchange", handleRoute);
   handleRoute(); // first render
 }
 
 /**
  * Handle the current route based on the location hash.
- * Fallback to 'home' if the route is unknown.
+ * Fallback to 'login' if the route is unknown.
  */
 function handleRoute() {
-  const path = (location.hash.startsWith('#/') ? location.hash.slice(2) : '') || 'home';
-  const known = ['home', 'board'];
-  const route = known.includes(path) ? path : 'home';
+  const path = (location.hash.startsWith("#/") ? location.hash.slice(2) : "") || "login";
+  const known = ["login", "register", "recover", "dashboard"];
+  const route = known.includes(path) ? path : "login";
 
-  loadView(route).catch(err => {
+  loadView(route).catch((err) => {
     console.error(err);
-    app.innerHTML = `<p style="color:#ffb4b4">Error loading the view.</p>`;
+    app.innerHTML = `<p style="color:#ff4d4d">Error loading the view.</p>`;
   });
 }
 
 /* ---- View-specific logic ---- */
 
 /**
- * Initialize the "home" view.
- * Attaches a submit handler to the register form to navigate to the board.
+ * Initialize the "login" view.
+ * Handles user login and redirects to dashboard.
  */
-function initHome() {
-  const form = document.getElementById('registerForm');
-  const userInput = document.getElementById('username');
-  const passInput = document.getElementById('password');
-  const msg = document.getElementById('registerMsg');
+function initLogin() {
+  const form = document.getElementById("loginForm");
+  const emailInput = document.getElementById("email");
+  const passInput = document.getElementById("password");
+  const msg = document.getElementById("loginMsg");
 
   if (!form) return;
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    msg.textContent = '';
-
-    const username = userInput?.value.trim();
-    const password = passInput?.value.trim();
-
-    if (!username || !password) {
-      msg.textContent = 'Por favor completa usuario y contraseña.';
-      return;
-    }
-
-    form.querySelector('button[type="submit"]').disabled = true;
+    msg.textContent = "";
 
     try {
-      const data = await registerUser({ username, password });
-      msg.textContent = 'Registro exitoso';
-
-      setTimeout(() => (location.hash = '#/board'), 400);
+      await loginUser({
+        email: emailInput.value.trim(),
+        password: passInput.value.trim(),
+      });
+      msg.textContent = "Login successful!";
+      setTimeout(() => (location.hash = "#/dashboard"), 400);
     } catch (err) {
-      msg.textContent = `No se pudo registrar: ${err.message}`;
-    } finally {
-      form.querySelector('button[type="submit"]').disabled = false;
+      msg.textContent = `Login failed: ${err.message}`;
     }
   });
 }
 
 /**
- * Initialize the "board" view.
- * Sets up the todo form, input, and list with create/remove/toggle logic.
+ * Initialize the "register" view.
+ * Handles new user registration.
  */
-function initBoard() {
-  const form = document.getElementById('todoForm');
-  const input = document.getElementById('newTodo');
-  const list = document.getElementById('todoList');
-  if (!form || !input || !list) return;
+function initRegister() {
+  const form = document.getElementById("registerForm");
+  const msg = document.getElementById("registerMsg");
 
-  // Add new todo item
-  form.addEventListener('submit', (e) => {
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const title = input.value.trim();
+    msg.textContent = "";
+
+    try {
+      const userData = {
+        firstName: document.getElementById("firstName").value.trim(),
+        lastName: document.getElementById("lastName").value.trim(),
+        age: document.getElementById("age").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        password: document.getElementById("password").value.trim(),
+      };
+
+      await registerUser(userData);
+      msg.textContent = "Registration successful!";
+      setTimeout(() => (location.hash = "#/login"), 400);
+    } catch (err) {
+      msg.textContent = `Registration failed: ${err.message}`;
+    }
+  });
+}
+
+/**
+ * Initialize the "recover" view.
+ * Handles password recovery.
+ */
+function initRecover() {
+  const form = document.getElementById("recoverForm");
+  const msg = document.getElementById("recoverMsg");
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.textContent = "";
+
+    try {
+      await recoverPassword({
+        email: document.getElementById("recoverEmail").value.trim(),
+      });
+      msg.textContent = "Recovery email sent!";
+    } catch (err) {
+      msg.textContent = `Recovery failed: ${err.message}`;
+    }
+  });
+}
+
+/**
+ * Initialize the "dashboard" view.
+ * Handles CRUD operations for tasks.
+ */
+function initDashboard() {
+  const form = document.getElementById("taskForm");
+  const list = document.getElementById("taskList");
+
+  if (!form || !list) return;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById("title").value.trim();
+    const detail = document.getElementById("detail").value.trim();
+    const date = document.getElementById("date").value;
+    const time = document.getElementById("time").value;
+    const status = document.getElementById("status").value;
+
     if (!title) return;
 
-    const li = document.createElement('li');
-    li.className = 'todo';
-    li.innerHTML = `
-      <label>
-        <input type="checkbox" class="check">
-        <span>${title}</span>
-      </label>
-      <button class="link remove" type="button">Eliminar</button>
+    const taskItem = document.createElement("div");
+    taskItem.className = "task";
+    taskItem.innerHTML = `
+      <h3>${title}</h3>
+      <p>${detail}</p>
+      <small>${date} ${time}</small>
+      <span>Status: ${status}</span>
+      <button class="removeBtn">Delete</button>
     `;
-    list.prepend(li);
-    input.value = '';
-  });
 
-  // Handle remove and toggle completion
-  list.addEventListener('click', (e) => {
-    const li = e.target.closest('.todo');
-    if (!li) return;
-    if (e.target.matches('.remove')) li.remove();
-    if (e.target.matches('.check')) li.classList.toggle('completed', e.target.checked);
+    list.prepend(taskItem);
+    form.reset();
+
+    // Delete task
+    taskItem.querySelector(".removeBtn").addEventListener("click", () => {
+      taskItem.remove();
+    });
   });
 }

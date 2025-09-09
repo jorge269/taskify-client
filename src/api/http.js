@@ -47,33 +47,8 @@ async function request(path, { method = 'GET', headers = {}, body } = {}) {
  * Provides shorthand methods for common HTTP verbs.
  */
 export const http = {
-  /**
-   * Perform a GET request.
-   * @param {string} path - API path.
-   * @param {Object} [opts] - Optional fetch options.
-   */
   get: (path, opts) => request(path, { method: 'GET', ...opts }),
-
-  /**
-   * Perform a POST request.
-   * @param {string} path - API path.
-   * @param {Object} body - Request body.
-   * @param {Object} [opts] - Optional fetch options.
-   */
   post: (path, body, opts) => request(path, { method: 'POST', body, ...opts }),
-
-  /**
-   * Perform a PUT request.
-   * @param {string} path - API path.
-   * @param {Object} body - Request body.
-   * @param {Object} [opts] - Optional fetch options.
-   */
   put: (path, body, opts) => request(path, { method: 'PUT', body, ...opts }),
-
-  /**
-   * Perform a DELETE request.
-   * @param {string} path - API path.
-   * @param {Object} [opts] - Optional fetch options.
-   */
   del: (path, opts) => request(path, { method: 'DELETE', ...opts }),
 };
