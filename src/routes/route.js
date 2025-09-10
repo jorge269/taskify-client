@@ -61,23 +61,28 @@ function initLogin() {
   const form = document.getElementById("loginForm");
   const emailInput = document.getElementById("email");
   const passInput = document.getElementById("password");
-  const msg = document.getElementById("loginMsg");
+  // const msg = document.getElementById("loginMsg");
 
   if (!form) return;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    msg.textContent = "";
+    // msg.textContent = "";
 
     try {
-      await loginUser({
+      console.log("Attempting login with:", { email: emailInput.value.trim() });
+      const response = await loginUser({
         email: emailInput.value.trim(),
         password: passInput.value.trim(),
       });
-      msg.textContent = "Login successful!";
+      console.log("The login has succeeded!!!", response);
+
+      // msg.textContent = "Login successful!";
       setTimeout(() => (location.hash = "#/dashboard"), 400);
     } catch (err) {
-      msg.textContent = `Login failed: ${err.message}`;
+      console.error("The login has failed:", err);
+      console.error("Error message:", err.message);
+      // msg.textContent = `Login failed: ${err.message}`;
     }
   });
 }
@@ -88,17 +93,17 @@ function initLogin() {
  */
 function initRegister() {
   const form = document.getElementById("registerForm");
-  const msg = document.getElementById("registerMsg");
+ // const msg = document.getElementById("registerMsg");
 
   if (!form) return;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    msg.textContent = "";
+  //  msg.textContent = "";
 
     try {
       const userData = {
-        firstName: document.getElementById("firstName").value.trim(),
+        name: document.getElementById("firstName").value.trim(),
         lastName: document.getElementById("lastName").value.trim(),
         age: document.getElementById("age").value.trim(),
         email: document.getElementById("email").value.trim(),
@@ -106,10 +111,12 @@ function initRegister() {
       };
 
       await registerUser(userData);
-      msg.textContent = "Registration successful!";
+  //    msg.textContent = "Registration successful!";
+  console.log("The register was sucessful !!!!!");
       setTimeout(() => (location.hash = "#/login"), 400);
     } catch (err) {
-      msg.textContent = `Registration failed: ${err.message}`;
+      console.log("Something has failed:", err.message);
+   //   msg.textContent = `Registration failed: ${err.message}`;
     }
   });
 }
