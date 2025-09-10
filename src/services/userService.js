@@ -14,8 +14,8 @@ import { http } from "../api/http.js";
  * @returns {Promise<Object>} The created user object returned by the API.
  * @throws {Error} If the API responds with an error.
  */
-export async function registerUser({ firstName, lastName, age, email, password }) {
-  return http.post("/api/v1/users/register", { firstName, lastName, age, email, password });
+export async function registerUser({ name, lastName, age, email, password }) {
+  return http.post("/api/users/register", { name, lastName, age, email, password });
 }
 
 /**
@@ -30,7 +30,7 @@ export async function registerUser({ firstName, lastName, age, email, password }
  * @throws {Error} If the API responds with an error.
  */
 export async function loginUser({ email, password }) {
-  return http.post("/api/v1/users/login", { email, password });
+  return http.post("/api/users/login", { email, password });
 }
 
 /**
@@ -44,5 +44,5 @@ export async function loginUser({ email, password }) {
  * @throws {Error} If the API responds with an error.
  */
 export async function recoverPassword({ email }) {
-  return http.post("/api/v1/users/recover", { email });
+  return http.post("/api/users/recover", { email });
 }
